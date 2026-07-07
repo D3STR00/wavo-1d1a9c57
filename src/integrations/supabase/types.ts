@@ -14,7 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          match_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intents: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          kind: Database["public"]["Enums"]["intent_kind"]
+          message: string | null
+          status: Database["public"]["Enums"]["intent_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["intent_kind"]
+          message?: string | null
+          status?: Database["public"]["Enums"]["intent_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["intent_kind"]
+          message?: string | null
+          status?: Database["public"]["Enums"]["intent_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          created_at: string
+          id: string
+          intent_kind: Database["public"]["Enums"]["intent_kind"]
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intent_kind: Database["public"]["Enums"]["intent_kind"]
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intent_kind?: Database["public"]["Enums"]["intent_kind"]
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_seed: string
+          created_at: string
+          first_name: string
+          id: string
+          vibe_line: string | null
+        }
+        Insert: {
+          avatar_seed?: string
+          created_at?: string
+          first_name?: string
+          id: string
+          vibe_line?: string | null
+        }
+        Update: {
+          avatar_seed?: string
+          created_at?: string
+          first_name?: string
+          id?: string
+          vibe_line?: string | null
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          is_online: boolean
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          is_online?: boolean
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          is_online?: boolean
+          last_seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      waves: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          intent_kind: Database["public"]["Enums"]["intent_kind"]
+          status: Database["public"]["Enums"]["wave_status"]
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          intent_kind: Database["public"]["Enums"]["intent_kind"]
+          status?: Database["public"]["Enums"]["wave_status"]
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          intent_kind?: Database["public"]["Enums"]["intent_kind"]
+          status?: Database["public"]["Enums"]["wave_status"]
+          to_user?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +177,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      intent_kind: "coffee" | "walk" | "talk" | "gym"
+      intent_status: "live" | "idle" | "matched"
+      wave_status: "sent" | "returned" | "passed" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +306,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      intent_kind: ["coffee", "walk", "talk", "gym"],
+      intent_status: ["live", "idle", "matched"],
+      wave_status: ["sent", "returned", "passed", "expired"],
+    },
   },
 } as const
