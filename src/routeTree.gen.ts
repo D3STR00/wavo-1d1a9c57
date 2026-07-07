@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNearbyRouteImport } from './routes/_authenticated/nearby'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
+import { Route as AuthenticatedChatMatchIdRouteImport } from './routes/_authenticated/chat.$matchId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -45,35 +46,50 @@ const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChatMatchIdRoute =
+  AuthenticatedChatMatchIdRouteImport.update({
+    id: '/$matchId',
+    path: '/$matchId',
+    getParentRoute: () => AuthenticatedChatRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chat': typeof AuthenticatedChatRoute
+  '/chat': typeof AuthenticatedChatRouteWithChildren
   '/nearby': typeof AuthenticatedNearbyRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/chat/$matchId': typeof AuthenticatedChatMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chat': typeof AuthenticatedChatRoute
+  '/chat': typeof AuthenticatedChatRouteWithChildren
   '/nearby': typeof AuthenticatedNearbyRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/chat/$matchId': typeof AuthenticatedChatMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/chat': typeof AuthenticatedChatRoute
+  '/_authenticated/chat': typeof AuthenticatedChatRouteWithChildren
   '/_authenticated/nearby': typeof AuthenticatedNearbyRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/chat/$matchId': typeof AuthenticatedChatMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/chat' | '/nearby' | '/onboarding'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/chat'
+    | '/nearby'
+    | '/onboarding'
+    | '/chat/$matchId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/chat' | '/nearby' | '/onboarding'
+  to: '/' | '/auth' | '/chat' | '/nearby' | '/onboarding' | '/chat/$matchId'
   id:
     | '__root__'
     | '/'
@@ -82,6 +98,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/_authenticated/nearby'
     | '/_authenticated/onboarding'
+    | '/_authenticated/chat/$matchId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -134,17 +151,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/chat/$matchId': {
+      id: '/_authenticated/chat/$matchId'
+      path: '/$matchId'
+      fullPath: '/chat/$matchId'
+      preLoaderRoute: typeof AuthenticatedChatMatchIdRouteImport
+      parentRoute: typeof AuthenticatedChatRoute
+    }
   }
 }
 
+interface AuthenticatedChatRouteChildren {
+  AuthenticatedChatMatchIdRoute: typeof AuthenticatedChatMatchIdRoute
+}
+
+const AuthenticatedChatRouteChildren: AuthenticatedChatRouteChildren = {
+  AuthenticatedChatMatchIdRoute: AuthenticatedChatMatchIdRoute,
+}
+
+const AuthenticatedChatRouteWithChildren =
+  AuthenticatedChatRoute._addFileChildren(AuthenticatedChatRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+  AuthenticatedChatRoute: typeof AuthenticatedChatRouteWithChildren
   AuthenticatedNearbyRoute: typeof AuthenticatedNearbyRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedChatRoute: AuthenticatedChatRoute,
+  AuthenticatedChatRoute: AuthenticatedChatRouteWithChildren,
   AuthenticatedNearbyRoute: AuthenticatedNearbyRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
 }
