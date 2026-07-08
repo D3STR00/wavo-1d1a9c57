@@ -177,7 +177,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      intent_kind: "coffee" | "walk" | "talk" | "gym"
+      intent_kind:
+        | "coffee"
+        | "walk"
+        | "talk"
+        | "gym"
+        | "food"
+        | "study"
+        | "party"
+        | "chill"
       intent_status: "live" | "idle" | "matched"
       wave_status: "sent" | "returned" | "passed" | "expired"
     }
@@ -307,7 +315,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      intent_kind: ["coffee", "walk", "talk", "gym"],
+      intent_kind: [
+        "coffee",
+        "walk",
+        "talk",
+        "gym",
+        "food",
+        "study",
+        "party",
+        "chill",
+      ],
       intent_status: ["live", "idle", "matched"],
       wave_status: ["sent", "returned", "passed", "expired"],
     },
