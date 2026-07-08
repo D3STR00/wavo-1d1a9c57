@@ -110,12 +110,24 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+  body {
+    background-image:
+      radial-gradient(60% 40% at 15% 0%, color-mix(in oklab, var(--color-brand-purple) 18%, transparent), transparent 70%),
+      radial-gradient(50% 40% at 100% 100%, color-mix(in oklab, var(--color-brand-teal) 14%, transparent), transparent 70%);
+    background-attachment: fixed;
+  }
   * {
     border-color: var(--color-border);
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
+  }
+  /* System color-emoji fallback so ☕🚶💬🏋️ never render as boxes */
+  .emoji,
+  button, span, p, h1, h2, h3, h4 {
+    font-family: var(--font-sans), "Apple Color Emoji", "Segoe UI Emoji",
+      "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
   }
 }
 
@@ -133,11 +145,41 @@
     linear-gradient(160deg, oklch(0.20 0.06 285), oklch(0.15 0.04 210));
 }
 
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
 @utility pulse-dot {
   animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+@utility radar-ring {
+  animation: radar-ring 3.3s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+  transform-origin: center;
+  opacity: 0;
+}
+
+@utility radar-sweep {
+  background: conic-gradient(from 0deg, transparent 0deg, currentColor 25deg, transparent 60deg);
+  color: color-mix(in oklab, var(--color-brand-purple) 40%, transparent);
+  filter: blur(2px);
+  animation: radar-sweep 3.6s linear infinite;
+  opacity: 0.5;
 }
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.55; transform: scale(1.25); }
 }
+
+@keyframes radar-ring {
+  0%   { transform: scale(0.35); opacity: 0.9; }
+  80%  { opacity: 0.15; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+@keyframes radar-sweep {
+  to { transform: rotate(360deg); }
+}
+
