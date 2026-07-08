@@ -242,14 +242,36 @@ export default function NearbyPage() {
     setIncoming(null);
   }
 
+  const myIntent = useMemo(
+    () => intents.find((i) => i.user_id === uid) ?? null,
+    [intents, uid],
+  );
+
   return (
     <div className="min-h-screen pb-24">
       <WavoAlert wave={incoming} onWaveBack={waveBack} onPass={passWave} />
       <WavoBanner liveCount={liveCount} selected={filter} onSelect={setFilter} />
 
-      <main className="mx-auto max-w-xl px-4 pt-4">
+      <main className="mx-auto max-w-xl px-4 pt-4 space-y-4">
+        {myIntent && (
+          <MyWaveCard
+            kind={myIntent.kind}
+            message={myIntent.message}
+            createdAt={myIntent.created_at}
+          />
+        )}
+
+        <div className="flex items-center justify-between pt-1">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground/50">
+            Live wall
+          </h2>
+          <span className="text-xs text-foreground/40 tabular-nums">
+            {items.length} nearby
+          </span>
+        </div>
+
         {items.length === 0 ? (
-          <EmptyState />
+          <EmptyState intent={myIntent?.kind} />
         ) : (
           <ul className="space-y-3">
             {items.map((it) => (
@@ -266,14 +288,20 @@ export default function NearbyPage() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ intent }: { intent?: IntentKind }) {
   return (
-    <div className="mt-10 rounded-2xl bg-card/40 p-6 text-center ring-1 ring-white/10">
-      <div className="text-3xl">👋</div>
-      <p className="mt-2 font-semibold">Quiet around here right now</p>
-      <p className="mt-1 text-sm text-foreground/60">
-        You're live. When someone nearby shares your intent, they'll show up here instantly.
+    <div className="relative overflow-hidden rounded-2xl bg-card/40 p-6 text-center ring-1 ring-white/10">
+      <RadarPulse intent={intent} />
+      <p className="mt-4 font-display text-lg font-semibold">Scanning nearby…</p>
+      <p className="mx-auto mt-1 max-w-xs text-sm text-foreground/60">
+        You're broadcasting live. The moment someone within range shares an intent,
+        they'll pop up here.
       </p>
+      <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-green/10 px-3 py-1 text-xs font-semibold text-brand-green ring-1 ring-brand-green/25">
+        <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-brand-green" />
+        Live · realtime
+      </div>
     </div>
   );
 }
+
