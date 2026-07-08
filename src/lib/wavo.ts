@@ -1,6 +1,14 @@
 // Wavo domain constants + helpers. Keep tiny — the whole product is one loop.
 
-export type IntentKind = "coffee" | "walk" | "talk" | "gym";
+export type IntentKind =
+  | "coffee"
+  | "walk"
+  | "talk"
+  | "gym"
+  | "food"
+  | "study"
+  | "party"
+  | "chill";
 
 export const INTENTS: {
   kind: IntentKind;
@@ -52,6 +60,46 @@ export const INTENTS: {
     ring: "ring-gym-glow",
     buttonFrom: "from-gym-glow",
     buttonTo: "to-gym",
+  },
+  {
+    kind: "food",
+    label: "Food",
+    emoji: "🍜",
+    bg: "bg-food",
+    glow: "bg-food-glow",
+    ring: "ring-food-glow",
+    buttonFrom: "from-food-glow",
+    buttonTo: "to-food",
+  },
+  {
+    kind: "study",
+    label: "Study",
+    emoji: "📚",
+    bg: "bg-study",
+    glow: "bg-study-glow",
+    ring: "ring-study-glow",
+    buttonFrom: "from-study-glow",
+    buttonTo: "to-study",
+  },
+  {
+    kind: "party",
+    label: "Party",
+    emoji: "🎉",
+    bg: "bg-party",
+    glow: "bg-party-glow",
+    ring: "ring-party-glow",
+    buttonFrom: "from-party-glow",
+    buttonTo: "to-party",
+  },
+  {
+    kind: "chill",
+    label: "Chill",
+    emoji: "🌙",
+    bg: "bg-chill",
+    glow: "bg-chill-glow",
+    ring: "ring-chill-glow",
+    buttonFrom: "from-chill-glow",
+    buttonTo: "to-chill",
   },
 ];
 
