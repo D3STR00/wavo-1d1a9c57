@@ -14,6 +14,7 @@ function Onboarding() {
   const [name, setName] = useState("");
   const [intent, setIntent] = useState<IntentKind | null>(null);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -42,12 +43,30 @@ function Onboarding() {
   const submit = async () => {
     if (!intent || !name.trim()) return;
     setLoading(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user!.id;
-    await supabase.from("profiles").update({ first_name: name.trim() }).eq("id", uid);
-    await supabase.from("intents").insert({ user_id: uid, kind: intent, status: "live" });
-    await supabase.from("user_presence").upsert({ user_id: uid, is_online: true, last_seen_at: new Date().toISOString() });
-    navigate({ to: "/nearby" });
+    setErr(null);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user!.id;
+      const [{ error: profileError }, { error: intentError }, { error: presenceError }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .upsert({ id: uid, first_name: name.trim(), avatar_seed: uid }, { onConflict: "id" }),
+        supabase.from("intents").insert({ user_id: uid, kind: intent, status: "live" }),
+        supabase.from("user_presence").upsert({
+          user_id: uid,
+          is_online: true,
+          last_seen_at: new Date().toISOString(),
+        }),
+      ]);
+      if (profileError || intentError || presenceError) {
+        throw profileError ?? intentError ?? presenceError;
+      }
+      navigate({ to: "/nearby" });
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Couldn’t finish setup. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,8 +117,9 @@ function Onboarding() {
           disabled={!intent || !name.trim() || loading}
           className="mt-8 w-full rounded-xl bg-gradient-to-r from-brand-purple to-brand-green py-3 text-sm font-semibold text-primary-foreground shadow-lg disabled:opacity-50"
         >
-          Go live
+          {loading ? "…" : "Go live"}
         </button>
+        {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
       </main>
     </div>
   );
