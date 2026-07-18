@@ -5,7 +5,7 @@ import { WavoBanner } from "@/components/wavo/wavo-banner";
 import { IntentCard, type NearbyItem } from "@/components/wavo/intent-card";
 import { WavoAlert, type IncomingWave } from "@/components/wavo/wavo-alert";
 import { BottomNav } from "@/components/wavo/bottom-nav";
-import { MyWaveCard } from "@/components/wavo/my-wave-card";
+import { GoLiveControl } from "@/components/wavo/go-live";
 import { RadarPulse } from "@/components/wavo/radar-pulse";
 import type { IntentKind } from "@/lib/wavo";
 
@@ -56,22 +56,15 @@ export default function NearbyPage() {
       const id = data.user!.id;
       setUid(id);
 
-      // If no profile name or no live intent, kick to onboarding
-      const [{ data: prof }, { data: myIntent }] = await Promise.all([
-        supabase.from("profiles").select("first_name").eq("id", id).maybeSingle(),
-        supabase.from("intents").select("id").eq("user_id", id).eq("status", "live").limit(1),
-      ]);
-      if (!prof?.first_name || !myIntent || myIntent.length === 0) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("first_name")
+        .eq("id", id)
+        .maybeSingle();
+      if (!prof?.first_name) {
         navigate({ to: "/onboarding" });
         return;
       }
-
-      // Mark presence
-      await supabase.from("user_presence").upsert({
-        user_id: id,
-        is_online: true,
-        last_seen_at: new Date().toISOString(),
-      });
 
       await Promise.all([loadIntents(), loadWaves(id), loadMatches(id)]);
     })();
@@ -81,7 +74,6 @@ export default function NearbyPage() {
       if (data.user) {
         await supabase.from("user_presence").upsert({
           user_id: data.user.id,
-          is_online: true,
           last_seen_at: new Date().toISOString(),
         });
       }
@@ -253,11 +245,17 @@ export default function NearbyPage() {
       <WavoBanner liveCount={liveCount} selected={filter} onSelect={setFilter} />
 
       <main className="mx-auto max-w-xl px-4 pt-4 space-y-4">
-        {myIntent && (
-          <MyWaveCard
-            kind={myIntent.kind}
-            message={myIntent.message}
-            createdAt={myIntent.created_at}
+        {uid && (
+          <GoLiveControl
+            uid={uid}
+            live={
+              myIntent
+                ? { id: myIntent.id, kind: myIntent.kind, createdAt: myIntent.created_at }
+                : null
+            }
+            onChange={() => {
+              loadIntents();
+            }}
           />
         )}
 
