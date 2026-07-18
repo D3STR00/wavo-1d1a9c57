@@ -87,14 +87,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Wavo — Real-time intent, near you" },
       {
         property: "og:description",
-        content: "Wavo is a real-time intent network. Say what you want to do right now — coffee, walk, talk, gym — and match with people nearby who are down.",
+        content: "Intent → Vibe → Meet. A human coordination layer, not a feed.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Wavo — Real-time intent, near you" },
-      { name: "twitter:description", content: "Wavo is a real-time intent network. Say what you want to do right now — coffee, walk, talk, gym — and match with people nearby who are down." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f33212b-f15e-4e27-b7ed-03db19b9f56f/id-preview-f8936ff7--5617a91f-9c02-4ca4-98b2-ed928d197b10.lovable.app-1784378149310.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f33212b-f15e-4e27-b7ed-03db19b9f56f/id-preview-f8936ff7--5617a91f-9c02-4ca4-98b2-ed928d197b10.lovable.app-1784378149310.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
