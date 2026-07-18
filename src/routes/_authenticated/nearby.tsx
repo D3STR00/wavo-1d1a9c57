@@ -191,6 +191,7 @@ export default function NearbyPage() {
           intent: i.kind,
           message: i.message,
           createdAt: i.created_at,
+          expiresAt: i.expires_at,
           state: matched ? "matched" : "available",
           waveState: matched ? "matched" : sent ? "sent" : "idle",
         };
