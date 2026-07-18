@@ -245,11 +245,17 @@ export default function NearbyPage() {
       <WavoBanner liveCount={liveCount} selected={filter} onSelect={setFilter} />
 
       <main className="mx-auto max-w-xl px-4 pt-4 space-y-4">
-        {myIntent && (
-          <MyWaveCard
-            kind={myIntent.kind}
-            message={myIntent.message}
-            createdAt={myIntent.created_at}
+        {uid && (
+          <GoLiveControl
+            uid={uid}
+            live={
+              myIntent
+                ? { id: myIntent.id, kind: myIntent.kind, createdAt: myIntent.created_at }
+                : null
+            }
+            onChange={() => {
+              loadIntents();
+            }}
           />
         )}
 
