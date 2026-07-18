@@ -56,22 +56,15 @@ export default function NearbyPage() {
       const id = data.user!.id;
       setUid(id);
 
-      // If no profile name or no live intent, kick to onboarding
-      const [{ data: prof }, { data: myIntent }] = await Promise.all([
-        supabase.from("profiles").select("first_name").eq("id", id).maybeSingle(),
-        supabase.from("intents").select("id").eq("user_id", id).eq("status", "live").limit(1),
-      ]);
-      if (!prof?.first_name || !myIntent || myIntent.length === 0) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("first_name")
+        .eq("id", id)
+        .maybeSingle();
+      if (!prof?.first_name) {
         navigate({ to: "/onboarding" });
         return;
       }
-
-      // Mark presence
-      await supabase.from("user_presence").upsert({
-        user_id: id,
-        is_online: true,
-        last_seen_at: new Date().toISOString(),
-      });
 
       await Promise.all([loadIntents(), loadWaves(id), loadMatches(id)]);
     })();
@@ -81,7 +74,6 @@ export default function NearbyPage() {
       if (data.user) {
         await supabase.from("user_presence").upsert({
           user_id: data.user.id,
-          is_online: true,
           last_seen_at: new Date().toISOString(),
         });
       }
