@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
-import { intentBy, initialsFor, fakeDistance, timeAgo, type IntentKind } from "@/lib/wavo";
+import { intentBy, initialsFor, fakeDistance, type IntentKind } from "@/lib/wavo";
 import { cn } from "@/lib/utils";
 
 export type NearbyItem = {
@@ -8,9 +9,27 @@ export type NearbyItem = {
   intent: IntentKind;
   message?: string | null;
   createdAt: string;
+  expiresAt: string;
   state: "available" | "matched" | "normal";
   waveState?: "idle" | "sent" | "matched";
 };
+
+function useCountdown(expiresAt: string) {
+  const [left, setLeft] = useState(() =>
+    Math.max(0, new Date(expiresAt).getTime() - Date.now()),
+  );
+  useEffect(() => {
+    const end = new Date(expiresAt).getTime();
+    const t = setInterval(() => {
+      setLeft(Math.max(0, end - Date.now()));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [expiresAt]);
+  const sec = Math.ceil(left / 1000);
+  const mm = Math.floor(sec / 60);
+  const ss = sec % 60;
+  return `${mm}:${ss.toString().padStart(2, "0")}`;
+}
 
 export function IntentCard({
   item,
@@ -24,6 +43,7 @@ export function IntentCard({
   const intent = intentBy(item.intent);
   const matched = item.waveState === "matched" || item.state === "matched";
   const sent = item.waveState === "sent";
+  const countdown = useCountdown(item.expiresAt);
 
   return (
     <div
@@ -34,11 +54,9 @@ export function IntentCard({
         item.state === "available" && !matched && "ring-white/25",
       )}
     >
-      {/* faint emoji watermark */}
       <span className="pointer-events-none absolute -right-2 -bottom-6 text-8xl opacity-5 select-none">
         {intent.emoji}
       </span>
-      {/* glow */}
       <span
         className={cn(
           "pointer-events-none absolute -top-16 -right-10 h-40 w-40 rounded-full blur-3xl opacity-30",
@@ -65,7 +83,7 @@ export function IntentCard({
             )}
           </div>
           <p className="text-xs text-foreground/60">
-            {fakeDistance(item.userId)} · {timeAgo(item.createdAt)}
+            {fakeDistance(item.userId)} · live {countdown}
           </p>
           {item.message ? (
             <p className="mt-2 line-clamp-2 text-sm text-foreground/85">
@@ -80,11 +98,7 @@ export function IntentCard({
       </div>
 
       <div className="relative mt-3 flex items-center justify-between">
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-foreground/80 ring-1 ring-white/10",
-          )}
-        >
+        <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-foreground/80 ring-1 ring-white/10">
           {intent.emoji} {intent.label}
         </span>
 
@@ -105,7 +119,7 @@ export function IntentCard({
               <Check className="h-4 w-4" /> Matched
             </>
           ) : sent ? (
-            <>👋 Waved</>
+            <>👋 Wave sent</>
           ) : (
             <>👋 Wave</>
           )}
