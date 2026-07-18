@@ -60,10 +60,10 @@ export function WavoAlert({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-widest text-white/80">
-              Wavo · live
+              Wavo · incoming
             </p>
             <p className="truncate font-semibold text-white">
-              {wave.fromName} waved · {intent.emoji} {intent.label}
+              {wave.fromName} wants to join your vibe · {intent.emoji} {intent.label}
             </p>
           </div>
           <span className="text-xs font-medium text-white/70 tabular-nums">
@@ -75,7 +75,7 @@ export function WavoAlert({
             onClick={() => onPass(wave)}
             className="flex-1 rounded-full bg-white/10 py-2 text-sm font-semibold text-white/90 ring-1 ring-white/20 hover:bg-white/15"
           >
-            Pass
+            Ignore
           </button>
           <button
             onClick={() => onWaveBack(wave)}

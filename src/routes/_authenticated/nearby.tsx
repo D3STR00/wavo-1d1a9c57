@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { WavoBanner } from "@/components/wavo/wavo-banner";
 import { IntentCard, type NearbyItem } from "@/components/wavo/intent-card";
@@ -7,6 +7,7 @@ import { WavoAlert, type IncomingWave } from "@/components/wavo/wavo-alert";
 import { BottomNav } from "@/components/wavo/bottom-nav";
 import { GoLiveControl } from "@/components/wavo/go-live";
 import { RadarPulse } from "@/components/wavo/radar-pulse";
+import { MatchModal, type MatchInfo } from "@/components/wavo/match-modal";
 import type { IntentKind } from "@/lib/wavo";
 
 export const Route = createFileRoute("/_authenticated/nearby")({
@@ -48,6 +49,9 @@ export default function NearbyPage() {
   const [waves, setWaves] = useState<WaveRow[]>([]);
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [incoming, setIncoming] = useState<IncomingWave | null>(null);
+  const [matchModal, setMatchModal] = useState<MatchInfo | null>(null);
+  const seenMatchIds = useRef<Set<string>>(new Set());
+  const bootstrappedMatches = useRef(false);
 
   // Bootstrap
   useEffect(() => {
@@ -169,6 +173,33 @@ export default function NearbyPage() {
     return set;
   }, [matches]);
 
+  // Fire the "It's a match" modal when a new match involving me arrives.
+  useEffect(() => {
+    if (!uid) return;
+    if (!bootstrappedMatches.current) {
+      matches.forEach((m) => seenMatchIds.current.add(m.id));
+      bootstrappedMatches.current = true;
+      return;
+    }
+    const fresh = matches.find((m) => !seenMatchIds.current.has(m.id));
+    if (fresh) {
+      matches.forEach((m) => seenMatchIds.current.add(m.id));
+      const otherId = fresh.user_a === uid ? fresh.user_b : fresh.user_a;
+      (async () => {
+        let name = profiles[otherId]?.first_name;
+        if (!name) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("first_name")
+            .eq("id", otherId)
+            .maybeSingle();
+          name = data?.first_name ?? "Someone";
+        }
+        setMatchModal({ matchId: fresh.id, name, intent: fresh.intent_kind });
+      })();
+    }
+  }, [matches, uid, profiles]);
+
   const wavedTo = useMemo(() => {
     const set = new Set<string>();
     waves.forEach((w) => {
@@ -191,6 +222,7 @@ export default function NearbyPage() {
           intent: i.kind,
           message: i.message,
           createdAt: i.created_at,
+          expiresAt: i.expires_at,
           state: matched ? "matched" : "available",
           waveState: matched ? "matched" : sent ? "sent" : "idle",
         };
@@ -242,6 +274,7 @@ export default function NearbyPage() {
   return (
     <div className="min-h-screen pb-24">
       <WavoAlert wave={incoming} onWaveBack={waveBack} onPass={passWave} />
+      <MatchModal match={matchModal} onClose={() => setMatchModal(null)} />
       <WavoBanner liveCount={liveCount} selected={filter} onSelect={setFilter} />
 
       <main className="mx-auto max-w-xl px-4 pt-4 space-y-4">
@@ -269,7 +302,7 @@ export default function NearbyPage() {
         </div>
 
         {items.length === 0 ? (
-          <EmptyState intent={myIntent?.kind} />
+          <EmptyState intent={myIntent?.kind} isLive={!!myIntent} />
         ) : (
           <ul className="space-y-3">
             {items.map((it) => (
@@ -286,19 +319,33 @@ export default function NearbyPage() {
   );
 }
 
-function EmptyState({ intent }: { intent?: IntentKind }) {
+function EmptyState({ intent, isLive }: { intent?: IntentKind; isLive: boolean }) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-card/40 p-6 text-center ring-1 ring-white/10">
       <RadarPulse intent={intent} />
-      <p className="mt-4 font-display text-lg font-semibold">Scanning nearby…</p>
-      <p className="mx-auto mt-1 max-w-xs text-sm text-foreground/60">
-        You're broadcasting live. The moment someone within range shares an intent,
-        they'll pop up here.
-      </p>
-      <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-green/10 px-3 py-1 text-xs font-semibold text-brand-green ring-1 ring-brand-green/25">
-        <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-brand-green" />
-        Live · realtime
-      </div>
+      {isLive ? (
+        <>
+          <p className="mt-4 font-display text-lg font-semibold">
+            Nobody nearby right now.
+          </p>
+          <p className="mx-auto mt-1 max-w-xs text-sm text-foreground/60">
+            Stay live — someone might join your vibe.
+          </p>
+          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-green/10 px-3 py-1 text-xs font-semibold text-brand-green ring-1 ring-brand-green/25">
+            <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-brand-green" />
+            Live · realtime
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="mt-4 font-display text-lg font-semibold">
+            The wall is quiet.
+          </p>
+          <p className="mx-auto mt-1 max-w-xs text-sm text-foreground/60">
+            Tap Go Live to broadcast a vibe and see who's around.
+          </p>
+        </>
+      )}
     </div>
   );
 }
