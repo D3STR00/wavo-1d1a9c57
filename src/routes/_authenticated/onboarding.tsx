@@ -1,8 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { INTENTS, type IntentKind } from "@/lib/wavo";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({ meta: [{ title: "Welcome to Wavo" }] }),
@@ -12,7 +10,6 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
 function Onboarding() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [intent, setIntent] = useState<IntentKind | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -26,41 +23,24 @@ function Onboarding() {
         .select("first_name")
         .eq("id", data.user!.id)
         .maybeSingle();
-      if (p?.first_name && !meta?.first_name) setName(p.first_name);
-      // If they've already picked a name AND a live intent → skip
-      const { data: existing } = await supabase
-        .from("intents")
-        .select("id")
-        .eq("user_id", data.user!.id)
-        .eq("status", "live")
-        .limit(1);
-      if (p?.first_name && existing && existing.length > 0) {
+      if (p?.first_name) {
+        if (!meta?.first_name) setName(p.first_name);
         navigate({ to: "/nearby" });
       }
     })();
   }, [navigate]);
 
   const submit = async () => {
-    if (!intent || !name.trim()) return;
+    if (!name.trim()) return;
     setLoading(true);
     setErr(null);
     try {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user!.id;
-      const [{ error: profileError }, { error: intentError }, { error: presenceError }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .upsert({ id: uid, first_name: name.trim(), avatar_seed: uid }, { onConflict: "id" }),
-        supabase.from("intents").insert({ user_id: uid, kind: intent, status: "live" }),
-        supabase.from("user_presence").upsert({
-          user_id: uid,
-          is_online: true,
-          last_seen_at: new Date().toISOString(),
-        }),
-      ]);
-      if (profileError || intentError || presenceError) {
-        throw profileError ?? intentError ?? presenceError;
-      }
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({ id: uid, first_name: name.trim(), avatar_seed: uid }, { onConflict: "id" });
+      if (profileError) throw profileError;
       navigate({ to: "/nearby" });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Couldn’t finish setup. Try again.");
@@ -76,7 +56,7 @@ function Onboarding() {
       <main className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
         <h1 className="font-display text-3xl font-bold">One quick thing.</h1>
         <p className="mt-2 text-sm text-foreground/70">
-          Your name and what you're down for. No bio, no pressure — Wavo is about being here, not being seen.
+          Just your first name. You'll choose what you're down for when you go live.
         </p>
 
         <label className="mt-6 block">
@@ -89,35 +69,12 @@ function Onboarding() {
           />
         </label>
 
-        <div className="mt-6">
-          <p className="mb-2 text-xs font-medium text-foreground/60">What are you down for?</p>
-          <div className="grid grid-cols-2 gap-2">
-            {INTENTS.map((i) => {
-              const active = intent === i.kind;
-              return (
-                <button
-                  key={i.kind}
-                  onClick={() => setIntent(i.kind)}
-                  className={cn(
-                    "rounded-2xl p-4 text-left ring-1 transition",
-                    i.bg,
-                    active ? "ring-primary" : "ring-white/10 opacity-70 hover:opacity-100",
-                  )}
-                >
-                  <div className="text-2xl">{i.emoji}</div>
-                  <div className="mt-1 font-semibold">{i.label}</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <button
           onClick={submit}
-          disabled={!intent || !name.trim() || loading}
+          disabled={!name.trim() || loading}
           className="mt-8 w-full rounded-xl bg-gradient-to-r from-brand-purple to-brand-green py-3 text-sm font-semibold text-primary-foreground shadow-lg disabled:opacity-50"
         >
-          {loading ? "…" : "Go live"}
+          {loading ? "…" : "Continue"}
         </button>
         {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
       </main>
