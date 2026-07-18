@@ -173,6 +173,33 @@ export default function NearbyPage() {
     return set;
   }, [matches]);
 
+  // Fire the "It's a match" modal when a new match involving me arrives.
+  useEffect(() => {
+    if (!uid) return;
+    if (!bootstrappedMatches.current) {
+      matches.forEach((m) => seenMatchIds.current.add(m.id));
+      bootstrappedMatches.current = true;
+      return;
+    }
+    const fresh = matches.find((m) => !seenMatchIds.current.has(m.id));
+    if (fresh) {
+      matches.forEach((m) => seenMatchIds.current.add(m.id));
+      const otherId = fresh.user_a === uid ? fresh.user_b : fresh.user_a;
+      (async () => {
+        let name = profiles[otherId]?.first_name;
+        if (!name) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("first_name")
+            .eq("id", otherId)
+            .maybeSingle();
+          name = data?.first_name ?? "Someone";
+        }
+        setMatchModal({ matchId: fresh.id, name, intent: fresh.intent_kind });
+      })();
+    }
+  }, [matches, uid, profiles]);
+
   const wavedTo = useMemo(() => {
     const set = new Set<string>();
     waves.forEach((w) => {
