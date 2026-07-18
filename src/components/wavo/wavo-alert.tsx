@@ -77,17 +77,6 @@ export function WavoAlert({
           >
             Ignore
           </button>
-          <span className="text-xs font-medium text-white/70 tabular-nums">
-            {secondsLeft}s
-          </span>
-        </div>
-        <div className="relative mt-3 flex gap-2">
-          <button
-            onClick={() => onPass(wave)}
-            className="flex-1 rounded-full bg-white/10 py-2 text-sm font-semibold text-white/90 ring-1 ring-white/20 hover:bg-white/15"
-          >
-            Pass
-          </button>
           <button
             onClick={() => onWaveBack(wave)}
             className="flex-[2] rounded-full bg-white py-2 text-sm font-bold text-brand-purple hover:bg-white/95"
