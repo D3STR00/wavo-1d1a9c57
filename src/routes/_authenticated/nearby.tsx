@@ -274,6 +274,7 @@ export default function NearbyPage() {
   return (
     <div className="min-h-screen pb-24">
       <WavoAlert wave={incoming} onWaveBack={waveBack} onPass={passWave} />
+      <MatchModal match={matchModal} onClose={() => setMatchModal(null)} />
       <WavoBanner liveCount={liveCount} selected={filter} onSelect={setFilter} />
 
       <main className="mx-auto max-w-xl px-4 pt-4 space-y-4">
