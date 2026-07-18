@@ -5,7 +5,7 @@ import { WavoBanner } from "@/components/wavo/wavo-banner";
 import { IntentCard, type NearbyItem } from "@/components/wavo/intent-card";
 import { WavoAlert, type IncomingWave } from "@/components/wavo/wavo-alert";
 import { BottomNav } from "@/components/wavo/bottom-nav";
-import { MyWaveCard } from "@/components/wavo/my-wave-card";
+import { GoLiveControl } from "@/components/wavo/go-live";
 import { RadarPulse } from "@/components/wavo/radar-pulse";
 import type { IntentKind } from "@/lib/wavo";
 
