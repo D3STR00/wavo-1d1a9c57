@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { WavoBanner } from "@/components/wavo/wavo-banner";
 import { IntentCard, type NearbyItem } from "@/components/wavo/intent-card";
@@ -7,6 +7,7 @@ import { WavoAlert, type IncomingWave } from "@/components/wavo/wavo-alert";
 import { BottomNav } from "@/components/wavo/bottom-nav";
 import { GoLiveControl } from "@/components/wavo/go-live";
 import { RadarPulse } from "@/components/wavo/radar-pulse";
+import { MatchModal, type MatchInfo } from "@/components/wavo/match-modal";
 import type { IntentKind } from "@/lib/wavo";
 
 export const Route = createFileRoute("/_authenticated/nearby")({
