@@ -49,6 +49,9 @@ export default function NearbyPage() {
   const [waves, setWaves] = useState<WaveRow[]>([]);
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [incoming, setIncoming] = useState<IncomingWave | null>(null);
+  const [matchModal, setMatchModal] = useState<MatchInfo | null>(null);
+  const seenMatchIds = useRef<Set<string>>(new Set());
+  const bootstrappedMatches = useRef(false);
 
   // Bootstrap
   useEffect(() => {
