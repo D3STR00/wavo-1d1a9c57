@@ -302,7 +302,7 @@ export default function NearbyPage() {
         </div>
 
         {items.length === 0 ? (
-          <EmptyState intent={myIntent?.kind} />
+          <EmptyState intent={myIntent?.kind} isLive={!!myIntent} />
         ) : (
           <ul className="space-y-3">
             {items.map((it) => (
@@ -319,19 +319,33 @@ export default function NearbyPage() {
   );
 }
 
-function EmptyState({ intent }: { intent?: IntentKind }) {
+function EmptyState({ intent, isLive }: { intent?: IntentKind; isLive: boolean }) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-card/40 p-6 text-center ring-1 ring-white/10">
       <RadarPulse intent={intent} />
-      <p className="mt-4 font-display text-lg font-semibold">Scanning nearby…</p>
-      <p className="mx-auto mt-1 max-w-xs text-sm text-foreground/60">
-        You're broadcasting live. The moment someone within range shares an intent,
-        they'll pop up here.
-      </p>
-      <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-green/10 px-3 py-1 text-xs font-semibold text-brand-green ring-1 ring-brand-green/25">
-        <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-brand-green" />
-        Live · realtime
-      </div>
+      {isLive ? (
+        <>
+          <p className="mt-4 font-display text-lg font-semibold">
+            Nobody nearby right now.
+          </p>
+          <p className="mx-auto mt-1 max-w-xs text-sm text-foreground/60">
+            Stay live — someone might join your vibe.
+          </p>
+          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-green/10 px-3 py-1 text-xs font-semibold text-brand-green ring-1 ring-brand-green/25">
+            <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-brand-green" />
+            Live · realtime
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="mt-4 font-display text-lg font-semibold">
+            The wall is quiet.
+          </p>
+          <p className="mx-auto mt-1 max-w-xs text-sm text-foreground/60">
+            Tap Go Live to broadcast a vibe and see who's around.
+          </p>
+        </>
+      )}
     </div>
   );
 }
