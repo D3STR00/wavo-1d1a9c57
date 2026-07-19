@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/wavo/bottom-nav";
 import { intentBy, initialsFor, timeAgo, type IntentKind } from "@/lib/wavo";
 
-export const Route = createFileRoute("/_authenticated/chat")({
+export const Route = createFileRoute("/_authenticated/chat/")({
   head: () => ({ meta: [{ title: "Chat — Wavo" }] }),
   component: ChatList,
 });

@@ -16,7 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNearbyRouteImport } from './routes/_authenticated/nearby'
-import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
+import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat.index'
 import { Route as AuthenticatedChatMatchIdRouteImport } from './routes/_authenticated/chat.$matchId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -53,37 +53,37 @@ const AuthenticatedNearbyRoute = AuthenticatedNearbyRouteImport.update({
   path: '/nearby',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
+const AuthenticatedChatIndexRoute = AuthenticatedChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedChatMatchIdRoute =
   AuthenticatedChatMatchIdRouteImport.update({
-    id: '/$matchId',
-    path: '/$matchId',
-    getParentRoute: () => AuthenticatedChatRoute,
+    id: '/chat/$matchId',
+    path: '/chat/$matchId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/chat': typeof AuthenticatedChatRouteWithChildren
   '/nearby': typeof AuthenticatedNearbyRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/chat/$matchId': typeof AuthenticatedChatMatchIdRoute
+  '/chat/': typeof AuthenticatedChatIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/chat': typeof AuthenticatedChatRouteWithChildren
   '/nearby': typeof AuthenticatedNearbyRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/chat/$matchId': typeof AuthenticatedChatMatchIdRoute
+  '/chat': typeof AuthenticatedChatIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -91,11 +91,11 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/_authenticated/chat': typeof AuthenticatedChatRouteWithChildren
   '/_authenticated/nearby': typeof AuthenticatedNearbyRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/chat/$matchId': typeof AuthenticatedChatMatchIdRoute
+  '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -103,32 +103,32 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
-    | '/chat'
     | '/nearby'
     | '/onboarding'
     | '/profile'
     | '/chat/$matchId'
+    | '/chat/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/reset-password'
-    | '/chat'
     | '/nearby'
     | '/onboarding'
     | '/profile'
     | '/chat/$matchId'
+    | '/chat'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
-    | '/_authenticated/chat'
     | '/_authenticated/nearby'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/chat/$matchId'
+    | '/_authenticated/chat/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -189,46 +189,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNearbyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/chat': {
-      id: '/_authenticated/chat'
+    '/_authenticated/chat/': {
+      id: '/_authenticated/chat/'
       path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof AuthenticatedChatRouteImport
+      fullPath: '/chat/'
+      preLoaderRoute: typeof AuthenticatedChatIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chat/$matchId': {
       id: '/_authenticated/chat/$matchId'
-      path: '/$matchId'
+      path: '/chat/$matchId'
       fullPath: '/chat/$matchId'
       preLoaderRoute: typeof AuthenticatedChatMatchIdRouteImport
-      parentRoute: typeof AuthenticatedChatRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-interface AuthenticatedChatRouteChildren {
-  AuthenticatedChatMatchIdRoute: typeof AuthenticatedChatMatchIdRoute
-}
-
-const AuthenticatedChatRouteChildren: AuthenticatedChatRouteChildren = {
-  AuthenticatedChatMatchIdRoute: AuthenticatedChatMatchIdRoute,
-}
-
-const AuthenticatedChatRouteWithChildren =
-  AuthenticatedChatRoute._addFileChildren(AuthenticatedChatRouteChildren)
-
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedChatRoute: typeof AuthenticatedChatRouteWithChildren
   AuthenticatedNearbyRoute: typeof AuthenticatedNearbyRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedChatMatchIdRoute: typeof AuthenticatedChatMatchIdRoute
+  AuthenticatedChatIndexRoute: typeof AuthenticatedChatIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedChatRoute: AuthenticatedChatRouteWithChildren,
   AuthenticatedNearbyRoute: AuthenticatedNearbyRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedChatMatchIdRoute: AuthenticatedChatMatchIdRoute,
+  AuthenticatedChatIndexRoute: AuthenticatedChatIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
