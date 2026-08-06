@@ -1,92 +1,52 @@
+# Roll back + cleanly port Lovable Wavo UI into OG prototype
 
-# Wavo — MVP Rebuild Plan
+## Goal
+Revert the failed merge in this Lovable project, then cleanly immigrate the Lovable Wavo UI (components, design tokens, bottom nav, etc.) into the original Vite + React JS `wavo` prototype on GitHub.
 
-Following your own doctrine: **freeze complexity, ship the core loop first**. We build only what proves `Intent → Wave → Match → Chat`. Everything else (geofencing, verification, expiry timers, feedback loops, reliability score) is documented but **not built in v1**.
+## Current state
+- This Lovable project (TanStack Start rebuild) is the clean source of truth for the Wavo UI.
+- The OG repo at `https://github.com/D3STR00/wavo` is currently private/inaccessible (returns 404).
+- The reported symptom from the failed merge is the bottom bar icons looking "raw" / unstyled.
 
-## Scope of v1
+## Plan steps
 
-**In:**
-- Auth (phone OTP via Supabase)
-- Set intent (Coffee / Walk / Talk / Gym)
-- Nearby screen — the product's home
-- Wave action → Wavo alert → mutual match
-- Contextual chat (unlocked only on match)
-- Minimal identity reveal card (post-match)
-- Locked visual system (dark `#0C0C14`, purple→teal banner, Syne + DM Sans, per-intent color worlds)
+### 1. Revert this Lovable project to pre-merge state
+- Use Lovable History to restore the version before the merge attempt.
+- This gives us a clean, working Lovable source to copy from.
 
-**Out (deferred, tracked in-doc):**
-- Map view, geofencing, "not in your area", waitlist
-- Selfie/ID verification, reliability score, live location share, safety screen
-- Intent expiry timers, "still down?" ping, post-meet feedback
-- Deep profile editing (profile stays as "minimum truth container")
-- Fake-density fallback, session anchoring nudges
+### 2. Make the OG repo accessible
+- Make `https://github.com/D3STR00/wavo` public, or grant read access, so the codebase can be audited.
+- Alternative: paste the OG `package.json`, main entry file, and the component that currently renders the bottom nav.
 
-## Screens (v1)
+### 3. Audit the OG prototype
+- Read the OG repo structure, build tool (Vite), styling approach (CSS modules, Tailwind, styled-components, plain CSS?), routing, and component hierarchy.
+- Identify exactly where the bottom nav lives and why icons look raw (missing styles, wrong icon library, conflicting CSS, etc.).
 
-1. **Auth** — phone + OTP, minimal
-2. **Onboarding** — first name + avatar initials + pick default intent (single step, <30s)
-3. **Home = Nearby** — the app. Banner (logo, live count, bell) + intent pills + presence row + card list
-4. **Chat** — only accessible via a match; header shows the shared intent
-5. **Profile micro-sheet** — opens as a bottom sheet from a matched card, not a page: name, avatar, current intent, one line. Two actions: Chat / Dismiss
+### 4. Map Lovable UI pieces to the OG project
+- **Design tokens:** port `src/styles.css` (oklch color system, brand colors, intent colors, utilities) into the OG project's styling setup.
+- **Bottom nav:** port `src/components/wavo/bottom-nav.tsx` and its icons/styling.
+- **Core components:** port as needed — `WavoBanner`, `IntentCard`, `GoLiveControl`, `WavoAlert`, `MatchModal`, `RadarPulse`.
+- **Fonts:** ensure Syne + DM Sans are loaded the same way in the OG project.
 
-Bottom nav: **Nearby · Chat · Profile** (3 tabs, not 4 — Feed is Nearby)
+### 5. Clean merge rules
+- Do not copy TanStack Start or server-function code into the OG Vite project.
+- Keep OG routing and build setup intact.
+- Only bring over presentational components and styles.
+- Convert JSX/TSX to whatever the OG project uses if needed (JSX vs TSX, icon imports, etc.).
+- Preserve existing OG business logic; only replace/adjust UI shell and components.
 
-## The Wave→Wavo mechanic (core loop)
+### 6. Fix the bottom nav icons specifically
+- Inspect the OG bottom nav implementation.
+- Replace raw icons with the Lovable version's styled icon buttons.
+- Ensure active states, labels, and spacing match the Lovable design.
 
-1. Tap 👋 on a card → sender marked `live + interested`, receiver gets a **Wavo alert** (in-app toast, not a notification permission ask in v1)
-2. Alert shows for ~20s with **Wave back / Pass**
-3. Both waved → `matches` row created → both cards flip to **Matched** state (green gradient, ✓) → chat unlocked
-4. Cooldown per (sender, receiver) pair to prevent spam
-5. Wave visibility decays after a few minutes (backend TTL, no visible countdown)
+### 7. Validate
+- Run the OG project locally (or preview it) and confirm:
+  - Bottom nav icons render correctly.
+  - Dark theme and brand colors apply.
+  - No console errors or broken imports.
+  - Other ported screens/components look right.
 
-## Data model (Supabase, connected project)
-
-I'll inspect your existing schema first. If tables are missing, I'll generate a migration script for you to run in the Supabase SQL editor (I can't run migrations against your external project from here).
-
-Target tables:
-
-- `profiles` — id (auth uid), first_name, avatar_seed, created_at
-- `intents` — id, user_id, kind (`coffee|walk|talk|gym`), status (`live|idle|matched`), created_at, expires_at
-- `user_presence` — user_id (PK), last_seen_at, is_online
-- `waves` — id, from_user, to_user, intent_id, status (`sent|returned|passed|expired`), created_at
-- `matches` — id, user_a, user_b, intent_kind, created_at
-- `chat_messages` — id, match_id, user_id, body, created_at
-
-RLS on every table. Realtime enabled on `waves`, `matches`, `chat_messages`, `user_presence`. Simple `status = live|idle|matched` derived view per your "one state per screen" rule.
-
-## Visual system (locked from your doc)
-
-- Background `#0C0C14`, banner gradient (deep purple → teal), two blurred glow circles (top-right purple, bottom-left teal)
-- Fonts: Syne (display), DM Sans (body) via `@fontsource`
-- Logo gradient: `#A78BFA` → `#34D399`
-- Per-intent color tokens (Coffee amber, Walk green, Talk purple, Gym orange-red) as CSS variables in `src/styles.css`
-- All colors semantic tokens — never hardcoded in components
-- Card = its intent's color world (bg + glow + button gradient + faint emoji watermark)
-- States per card: **Available** (subtle glow + live dot), **Normal** (muted), **Matched** (solid highlight + ✓)
-
-## Technical stack
-
-- TanStack Start (existing template) + React 19 + Tailwind v4
-- Browser Supabase client for the current session (`localStorage`)
-- Realtime subscriptions wired in `__root.tsx` + per-screen hooks
-- Auth-gated routes under `src/routes/_authenticated/` (Nearby, Chat, Profile); `/auth` public
-- No edge functions in v1 — all reads/writes go through Supabase client with RLS
-
-## Build order
-
-1. Design tokens + fonts + banner shell (visible immediately)
-2. Auth (phone OTP) + onboarding
-3. Nearby screen with mocked data, so the UI stabilizes before realtime
-4. Schema audit → migration script (I hand you SQL if anything is missing)
-5. Wire Nearby to real `intents` + `user_presence`
-6. Wave → Wavo alert → match flow with realtime
-7. Chat (contextual, tied to `match_id`)
-8. Profile micro-sheet
-
-## What I need from you before build starts
-
-1. **Supabase URL + publishable/anon key** — the browser client needs these. Paste them or add via secrets.
-2. **Confirm phone OTP** as the auth method (vs. email as a temporary stand-in while you set up an SMS provider like Twilio in Supabase — SMS costs money and requires config on your Supabase project I can't do from here).
-3. **Confirm scope** — I'll defer everything under "Security & Safety Layer", geofencing, verification, and timers. OK to build the loop first and layer those on later?
-
-Once you answer those, I'll switch to build mode and start with the visual shell.
+## What I need from you first
+1. Confirm you want to revert this Lovable project via History (or tell me if the bad merge is actually in the OG GitHub repo, not here).
+2. Make the OG `D3STR00/wavo` repo public, or paste its `package.json` and the bottom-nav component file here.
